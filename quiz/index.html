@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>🎉 Fredagsquiz</title>
+<style>
+  :root{
+    --font-body:ui-rounded,'SF Pro Rounded','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+    --font-head:ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Segoe UI',system-ui,-apple-system,sans-serif;
+    --bg1:#3a1c71; --bg2:#d76d77; --bg3:#ffaf7b;
+    --accent:#00c896; --accent-dark:#009973;
+    --card:#ffffff; --ink:#28203a; --muted:#6b6280;
+    --danger:#ff5d6c; --warn:#ffc94d;
+    --r1:#ff4d6d; --r2:#3d7dff; --r3:#ffcc00; --r4:#2ecc71;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:var(--font-body); color:var(--ink);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2) 50%,var(--bg3));
+    background-attachment:fixed;
+    min-height:100vh; overflow-x:hidden;
+  }
+  h1,h2,h3,.title-font{font-family:var(--font-head);}
+  #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999;}
+  #app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 14px 60px;}
+  .wrap{width:100%;max-width:760px;}
+  .card{
+    background:var(--card); border-radius:24px; padding:28px 26px;
+    box-shadow:0 20px 50px rgba(20,10,40,.35);
+    animation:pop .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes pop{from{opacity:0;transform:scale(.92) translateY(14px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  .brand{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 22px;color:#fff;text-align:center;}
+  .brand h1{font-size:2rem;margin:0;text-shadow:0 3px 0 rgba(0,0,0,.15);}
+  .brand span.sub{display:block;font-size:.95rem;font-weight:600;opacity:.9;margin-top:2px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-family:var(--font-head); font-weight:700; font-size:1.05rem;
+    border:none;border-radius:16px;padding:15px 22px;cursor:pointer;
+    background:var(--accent);color:#fff;box-shadow:0 6px 0 var(--accent-dark);
+    transition:transform .08s ease, box-shadow .08s ease; width:100%;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--accent-dark);}
+  .btn.secondary{background:#fff;color:var(--accent-dark);border:2px solid var(--accent);box-shadow:0 6px 0 #d8f5ec;}
+  .btn.ghost{background:transparent;color:#fff;box-shadow:none;border:2px solid rgba(255,255,255,.7);}
+  .btn.danger{background:var(--danger);box-shadow:0 6px 0 #b8323f;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn-row{display:flex;gap:10px;margin-top:10px;}
+  .btn-row .btn{flex:1;}
+  input[type=text],input[type=number]{
+    width:100%;font-family:var(--font-body);font-size:1.05rem;font-weight:700;
+    padding:14px 16px;border-radius:14px;border:2px solid #e3dff0;margin:8px 0 14px;
+    outline:none; color:var(--ink);
+  }
+  input:focus{border-color:var(--accent);}
+  label.field-label{font-weight:800;color:var(--muted);font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;}
+  .avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:10px 0 16px;max-height:210px;overflow-y:auto;padding:4px;}
+  @media(max-width:520px){.avatar-grid{grid-template-columns:repeat(5,1fr);}}
+  .avatar-opt{
+    font-size:1.6rem;text-align:center;padding:8px 0;border-radius:12px;cursor:pointer;
+    background:#f4f2fa;border:3px solid transparent;user-select:none;
+  }
+  .avatar-opt.sel{border-color:var(--accent);background:#e4fbf3;transform:scale(1.08);}
+  .roomcode{
+    font-family:var(--font-head);font-weight:800;font-size:2.6rem;letter-spacing:.12em;
+    text-align:center;background:#f4f2fa;border-radius:16px;padding:14px 10px;color:var(--accent-dark);
+    margin:10px 0;
+  }
+  .muted{color:var(--muted);font-size:.92rem;}
+  .center{text-align:center;}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .pill{display:inline-block;padding:4px 12px;border-radius:999px;background:#f4f2fa;font-weight:800;font-size:.8rem;color:var(--muted);}
+  .topic-pill{display:inline-block;padding:5px 14px;border-radius:999px;font-weight:800;font-size:.8rem;color:#fff;margin-bottom:10px;}
+  .player-list{max-height:260px;overflow-y:auto;margin:8px 0;}
+  .player-chip{
+    display:flex;align-items:center;gap:10px;background:#f4f2fa;border-radius:14px;
+    padding:9px 14px;margin-bottom:8px;font-weight:700;
+  }
+  .player-chip .av{font-size:1.4rem;}
+  .player-chip .nm{flex:1;}
+  .player-chip.offline{opacity:.45;}
+  .score-row{display:flex;align-items:center;gap:12px;background:#f4f2fa;border-radius:14px;padding:10px 14px;margin-bottom:8px;}
+  .score-row .rank{font-family:var(--font-head);font-weight:800;color:var(--muted);width:26px;}
+  .score-row .av{font-size:1.5rem;}
+  .score-row .nm{flex:1;font-weight:800;}
+  .score-row .sc{font-family:var(--font-head);font-weight:800;color:var(--accent-dark);}
+  .score-row.top1{background:linear-gradient(90deg,#fff6d6,#ffe9a8);}
+  .timerbar-outer{background:#eee9f7;border-radius:999px;height:14px;overflow:hidden;margin:6px 0 18px;}
+  .timerbar-inner{background:var(--accent);height:100%;width:100%;transition:width 1s linear;border-radius:999px;}
+  .timerbar-inner.low{background:var(--danger);}
+  .qtext{font-size:1.35rem;font-weight:800;margin:6px 0 18px;line-height:1.35;}
+  .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:480px){.opt-grid{grid-template-columns:1fr;}}
+  .opt-btn{
+    border:none;border-radius:16px;padding:20px 14px;font-family:var(--font-head);
+    font-weight:700;font-size:1.05rem;color:#fff;cursor:pointer;text-align:left;
+    box-shadow:0 6px 0 rgba(0,0,0,.18);transition:transform .08s;min-height:74px;
+  }
+  .opt-btn:active{transform:translateY(4px);}
+  .opt-btn:disabled{opacity:.55;cursor:default;}
+  .opt-btn.o0{background:var(--r1);} .opt-btn.o1{background:var(--r2);}
+  .opt-btn.o2{background:var(--r3);color:#3a2e00;} .opt-btn.o3{background:var(--r4);}
+  .opt-btn.correct{outline:5px solid #1c8a4a;box-shadow:0 0 0 6px rgba(46,204,113,.4);}
+  .opt-btn.picked{outline:5px solid #2a2438;box-shadow:0 0 0 5px rgba(255,255,255,.55);}
+  .tally-bar-outer{background:#eee9f7;border-radius:8px;height:22px;margin:4px 0 10px;overflow:hidden;}
+  .tally-bar-inner{height:100%;background:var(--accent);border-radius:8px;transition:width .6s ease;min-width:2%;}
+  .fact-box{background:#fff6e0;border-left:6px solid var(--warn);border-radius:10px;padding:14px 16px;margin-top:14px;font-weight:600;}
+  .big-emoji{font-size:3.2rem;text-align:center;margin-bottom:6px;}
+  .flex-center{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .progress-note{text-align:center;font-weight:800;color:var(--muted);margin-bottom:6px;}
+  .winner-banner{
+    text-align:center;background:linear-gradient(135deg,#ffe28a,#ffb454);
+    border-radius:20px;padding:26px 16px;margin-bottom:20px;box-shadow:0 10px 0 #e2932c;
+  }
+  .winner-banner .av{font-size:4rem;}
+  .winner-banner h2{margin:8px 0 2px;font-size:1.9rem;}
+  .facit-item{border-bottom:1px solid #ece8f7;padding:12px 0;}
+  .facit-item:last-child{border-bottom:none;}
+  .facit-q{font-weight:800;margin-bottom:4px;}
+  .facit-a{color:var(--accent-dark);font-weight:700;}
+  details.facit summary{cursor:pointer;font-family:var(--font-head);font-weight:700;padding:8px 0;}
+  a.linklike{color:var(--accent-dark);font-weight:800;text-decoration:underline;cursor:pointer;}
+  .helpbox{background:#f4f2fa;border-radius:14px;padding:14px 16px;margin-top:16px;font-size:.9rem;color:var(--muted);}
+  .badge{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:2px 10px;font-size:.75rem;font-weight:800;margin-left:6px;}
+  .spectator-shell{max-width:920px;}
+  .spectator-shell .roomcode{font-size:1.6rem;}
+  ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:#d8d4e8;border-radius:8px;}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<div id="app"></div>
+
+<script>
+/* ===================== NÄTVERK: inbyggd peer-to-peer ===================== */
+// Egen minimal WebRTC-klient (ersätter PeerJS-biblioteket så filen är helt fristående).
+// Använder PeerJS publika gratis-server enbart för att "presentera" webbläsarna för varandra;
+// själva spelet går sedan direkt mellan webbläsarna.
+const PEER_HOST = '0.peerjs.com';
+const ICE_CONFIG = { iceServers: [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: ['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'], username:'peerjs', credential:'peerjsp' },
+]};
+function rndId(n){ const c='abcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for(let i=0;i<n;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+class MiniEmitter {
+  constructor(){ this._h = {}; }
+  on(ev, fn){ (this._h[ev] = this._h[ev] || []).push(fn); return this; }
+  emit(ev, ...a){ (this._h[ev] || []).forEach(fn=>{ try{ fn(...a); }catch(e){ console.error(e); } }); }
+}
+class MiniPeer extends MiniEmitter {
+  constructor(id){
+    super();
+    this.id = id || ('p' + rndId(15));
+    this.token = rndId(12);
+    this.conns = {};
+    this.opened = false;
+    this._queue = [];
+    setTimeout(()=>this._connect(), 0);
+  }
+  _connect(){
+    let ws;
+    try{
+      ws = new WebSocket(`wss://${PEER_HOST}:443/peerjs?key=peerjs&id=${encodeURIComponent(this.id)}&token=${this.token}&version=1.5.4`);
+    }catch(e){ this.emit('error', {type:'network'}); return; }
+    this.ws = ws;
+    ws.onmessage = ev=>{ let m; try{ m = JSON.parse(ev.data); }catch(e){ return; } this._handle(m); };
+    ws.onclose = ()=>{ clearInterval(this._hb); if(!this.opened) this.emit('error', {type:'network'}); };
+    ws.onerror = ()=>{};
+    this._hb = setInterval(()=>{ if(ws.readyState===1) ws.send(JSON.stringify({type:'HEARTBEAT'})); }, 5000);
+  }
+  _send(m){
+    if(this.ws && this.ws.readyState===1 && this.opened) this.ws.send(JSON.stringify(m));
+    else this._queue.push(m);
+  }
+  _handle(m){
+    const p = m.payload || {};
+    if(m.type==='OPEN'){
+      this.opened = true;
+      this._queue.forEach(x=>this.ws.send(JSON.stringify(x))); this._queue = [];
+      this.emit('open', this.id);
+    } else if(m.type==='ID-TAKEN'){
+      this.emit('error', {type:'unavailable-id'}); try{ this.ws.close(); }catch(e){}
+    } else if(m.type==='ERROR' || m.type==='INVALID-KEY'){
+      this.emit('error', {type:'server-error'});
+    } else if(m.type==='OFFER'){
+      const c = new MiniConn(this, m.src, p.connectionId, false);
+      this.conns[p.connectionId] = c;
+      this.emit('connection', c);
+      c._handleOffer(p.sdp);
+    } else if(m.type==='ANSWER'){
+      const c = this.conns[p.connectionId]; if(c) c._handleAnswer(p.sdp);
+    } else if(m.type==='CANDIDATE'){
+      const c = this.conns[p.connectionId]; if(c) c._addCandidate(p.candidate);
+    } else if(m.type==='EXPIRE'){
+      Object.values(this.conns).filter(c=>c.peer===m.src && !c.open).forEach(c=>{ c.emit('error', {type:'peer-unavailable'}); c.close(); });
+      this.emit('error', {type:'peer-unavailable'});
+    } else if(m.type==='LEAVE'){
+      Object.values(this.conns).filter(c=>c.peer===m.src).forEach(c=>c.close());
+    }
+  }
+  connect(remoteId){
+    const cid = 'dc_' + rndId(12);
+    const c = new MiniConn(this, remoteId, cid, true);
+    this.conns[cid] = c;
+    c._start();
+    return c;
+  }
+}
+class MiniConn extends MiniEmitter {
+  constructor(peer, remoteId, cid, initiator){
+    super();
+    this._p = peer; this.peer = remoteId; this.cid = cid;
+    this.open = false; this._pending = []; this._remoteSet = false;
+    const pc = this.pc = new RTCPeerConnection(ICE_CONFIG);
+    pc.onicecandidate = e=>{
+      if(e.candidate) peer._send({type:'CANDIDATE', dst:remoteId,
+        payload:{candidate: e.candidate.toJSON ? e.candidate.toJSON() : e.candidate, type:'data', connectionId:cid}});
+    };
+    pc.onconnectionstatechange = ()=>{ if(pc.connectionState==='failed' || pc.connectionState==='closed') this._closed(); };
+    if(initiator) this._setupChannel(pc.createDataChannel('fnq', {ordered:true}));
+    else pc.ondatachannel = e=>this._setupChannel(e.channel);
+    this._timeout = setTimeout(()=>{ if(!this.open){ this.emit('error', {type:'timeout'}); this.close(); } }, 25000);
+  }
+  _setupChannel(dc){
+    this.dc = dc;
+    dc.onopen = ()=>{ this.open = true; clearTimeout(this._timeout); this.emit('open'); };
+    dc.onmessage = e=>{ let d; try{ d = JSON.parse(e.data); }catch(err){ d = e.data; } this.emit('data', d); };
+    dc.onclose = ()=>this._closed();
+  }
+  async _start(){
+    try{
+      const offer = await this.pc.createOffer();
+      await this.pc.setLocalDescription(offer);
+      const ld = this.pc.localDescription;
+      this._p._send({type:'OFFER', dst:this.peer, payload:{sdp:{type:ld.type, sdp:ld.sdp}, type:'data', connectionId:this.cid, label:'fnq', reliable:true, serialization:'json'}});
+    }catch(e){ this.emit('error', e); }
+  }
+  async _handleOffer(sdp){
+    try{
+      await this.pc.setRemoteDescription(sdp); this._flush();
+      const answer = await this.pc.createAnswer();
+      await this.pc.setLocalDescription(answer);
+      const ld = this.pc.localDescription;
+      this._p._send({type:'ANSWER', dst:this.peer, payload:{sdp:{type:ld.type, sdp:ld.sdp}, type:'data', connectionId:this.cid}});
+    }catch(e){ this.emit('error', e); }
+  }
+  async _handleAnswer(sdp){
+    try{ await this.pc.setRemoteDescription(sdp); this._flush(); }catch(e){ this.emit('error', e); }
+  }
+  _addCandidate(c){
+    if(this._remoteSet) this.pc.addIceCandidate(c).catch(()=>{});
+    else this._pending.push(c);
+  }
+  _flush(){ this._remoteSet = true; this._pending.forEach(c=>this.pc.addIceCandidate(c).catch(()=>{})); this._pending = []; }
+  send(d){ if(this.dc && this.dc.readyState==='open') this.dc.send(JSON.stringify(d)); }
+  _closed(){
+    if(this._isClosed) return;
+    const wasOpen = this.open;
+    this._isClosed = true; this.open = false; clearTimeout(this._timeout);
+    delete this._p.conns[this.cid];
+    if(wasOpen) this.emit('close');
+  }
+  close(){ try{ this.dc && this.dc.close(); }catch(e){} try{ this.pc.close(); }catch(e){} this._closed(); }
+}
+
+/* ===================== INNEHÅLL: FRÅGOR ===================== */
+const TOPIC_COLORS = { dolly:"#ff5d9e", val:"#3d7dff", varg:"#2ecc71" };
+const TOPIC_NAMES = { dolly:"🎤 Dolly Parton", val:"🗳️ Riksdagsvalet 2026", varg:"🐺 Vargar" };
+
+const QUESTIONS = [
+  { topic:"dolly", q:"Dolly Parton växte upp som ett av hur många syskon i sin familj?",
+    options:["6","9","12","15"], correct:2,
+    fact:"Dolly var barn nummer 4 av 12 syskon och växte upp i en liten stuga i Smoky Mountains, Tennessee!" },
+  { topic:"val", q:"Vilket datum går svenskarna till valurnorna i riksdagsvalet 2026?",
+    options:["6 september","13 september","20 september","27 september"], correct:1,
+    fact:"Söndagen den 13 september 2026 är det val till riksdag, kommun och region – vallokalerna har öppet 08.00–20.00." },
+  { topic:"varg", q:"Hur många vargar fick totalt skjutas i vinterns licensjakt 2026?",
+    options:["24 vargar","36 vargar","48 vargar","60 vargar"], correct:2,
+    fact:"48 vargar fick fällas, fördelat på fem län – bland annat Örebro och Södermanland." },
+  { topic:"dolly", q:"Vad heter Dolly Partons egen nöjespark i Tennessee?",
+    options:["Dollyland","Dollywood","Partonia","Smoky Park"], correct:1,
+    fact:"Dollywood i Pigeon Forge öppnade 1986 – trots det äger Dolly parken men vågar själv aldrig åka berg-och-dalbanorna där!" },
+  { topic:"val", q:"Hur många ledamöter har Sveriges riksdag?",
+    options:["249","299","349","399"], correct:2,
+    fact:"Riksdagen har 349 ledamöter som väljs proportionellt för fyra år i taget." },
+  { topic:"varg", q:"Vilka två län saknade helt licensjakt på varg 2026?",
+    options:["Värmland och Gävleborg","Dalarna och Örebro","Skåne och Halland","Norrbotten och Västerbotten"], correct:0,
+    fact:"I både Värmland och Gävleborg beslutades att ingen licensjakt skulle ske under 2026." },
+  { topic:"dolly", q:"Världens första klonade däggdjur (1996) döptes till Dolly – efter Dolly Parton. Vilket djur klonades?",
+    options:["En get","Ett får","En ko","En gris"], correct:1,
+    fact:"Fåret Dolly klonades av forskare i Skottland och fick sitt namn efter Dolly Partons... väl utvecklade sångröst." },
+  { topic:"val", q:"Hur stor andel av rösterna behöver ett parti få för att komma in i riksdagen (spärren)?",
+    options:["2 %","4 %","6 %","8 %"], correct:1,
+    fact:"Fyraprocentsspärren finns för att undvika alltför många småpartier i riksdagen." },
+  { topic:"varg", q:"Ungefär hur många vargar beräknas finnas i Sverige enligt senaste inventeringen (vintern 2025/26)?",
+    options:["ca 150","ca 355","ca 600","ca 900"], correct:1,
+    fact:"Inventeringen landade på ca 355 vargar i Sverige – samma nivå som föregående år, efter några års minskning." },
+  { topic:"dolly", q:"Dolly Parton är flerfaldig Guinness World Record-innehållare – bland annat för flest av vad?",
+    options:["Peruker sålda","Grammy-nomineringar för en kvinnlig countryartist","Konserter på en dag","Centimeter i håruppsättning"], correct:1,
+    fact:"Dolly håller flera Guinness-rekord, bland annat flest Grammy-nomineringar av en kvinnlig countryartist." },
+  { topic:"val", q:"Från och med vilket datum kunde man börja förtidsrösta inför valet 2026?",
+    options:["19 augusti","26 augusti","2 september","9 september"], correct:1,
+    fact:"Förtidsröstningen öppnade 26 augusti 2026 och pågår ända fram till valdagen." },
+  { topic:"varg", q:"Hur långt bort kan en varg höras yla under bra förhållanden?",
+    options:["Upp till 1,5 km","Upp till 5 km","Upp till 15 km","Upp till 50 km"], correct:2,
+    fact:"En varg kan höras yla upp till 15 km bort – och varje varg har ett unikt 'ylmönster' som andra vargar känner igen." },
+];
+
+const TIEBREAK = {
+  q:"UTSLAGSFRÅGA 🎯 Dolly Parton har sagt att hon skrivit fler än hur många låtar under sin karriär? (ange en siffra)",
+  correct:3000,
+  fact:"Dolly har i flera intervjuer sagt att hon skrivit uppemot 3 000 låtar genom åren!"
+};
+
+const AVATARS = ["🦄","🐸","🦊","🐧","🐙","🦥","🦖","🐢","🦔","🐼","🐨","🦁","🐯","🐵","🤖","👽","🥳","🕺","💃","🍕","🍩","🌮","🎩","🦩","🐝","🦀"];
+const TIME_LIMIT = 20000; // ms per fråga
+
+/* ===================== STATE ===================== */
+const S = {
+  role:null,           // 'host' | 'player' | 'spectator'
+  screen:'start',
+  peer:null,
+  connections:{},       // host: peerId -> conn
+  players:{},           // peerId -> {id,name,avatar,score,online,answeredThisRound}
+  roomCode:null,
+  hostConn:null,        // player/spectator: connection to host
+  me:{name:'', avatar:AVATARS[0]},
+  qIndex:-1,
+  currentQ:null,
+  questionStartTime:0,
+  answersThisRound:{},  // host: peerId -> {choice, ms}
+  receivedAt:0,
+  myAnswer:null,
+  reveal:null,
+  tiebreakAnswers:{},   // host
+  myTiebreakAnswer:null,
+  final:null,
+  countdownTimer:null,
+  timeLeftMs:TIME_LIMIT,
+  joinError:'',
+  answeredCount:0,
+  totalCount:0,
+  draftCode:'',
+  draftName:'',
+  iAmPlaying:false,   // host: vill spelledaren också tävla?
+};
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function $(sel){ return document.querySelector(sel); }
+function on(sel, ev, fn){ const n=$(sel); if(n) n.addEventListener(ev, fn); }
+function onAll(sel, ev, fn){ document.querySelectorAll(sel).forEach(n=>n.addEventListener(ev,fn)); }
+
+/* ===================== HJÄLP: SCOREBOARD ===================== */
+function sortedPlayers(){
+  return Object.values(S.players).sort((a,b)=>b.score-a.score);
+}
+function publicPlayerList(){
+  return Object.values(S.players).map(p=>({id:p.id,name:p.name,avatar:p.avatar,score:p.score,online:p.online!==false,isHost:!!p.isHost}));
+}
+function scoreboardHtml(compact){
+  const list = sortedPlayers();
+  if(list.length===0) return '<p class="muted center">Inga spelare ännu.</p>';
+  return list.map((p,i)=>`
+    <div class="score-row ${i===0 && p.score>0 ? 'top1':''}">
+      <div class="rank">${i+1}</div>
+      <div class="av">${p.avatar}</div>
+      <div class="nm">${esc(p.name)}${p.isHost?' <span class="badge">spelledare</span>':''}${p.online===false?' <span class="muted">(borta)</span>':''}</div>
+      <div class="sc">${p.score} p</div>
+    </div>`).join('');
+}
+
+/* ===================== PEERJS: HOST ===================== */
+function makeRoomCode(){
+  const chars='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s=''; for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+function becomeHost(attempt){
+  attempt = attempt || 0;
+  const code = makeRoomCode();
+  const peer = new MiniPeer('fnq-'+code, { debug:0 });
+  S.peer = peer;
+  peer.on('open', ()=>{
+    S.role='host'; S.roomCode=code; S.screen='hostLobby'; render();
+  });
+  peer.on('connection', conn=>{
+    S.connections[conn.peer] = conn;
+    conn.on('data', data=>onHostData(conn, data));
+    conn.on('close', ()=>{
+      if(S.players[conn.peer]) S.players[conn.peer].online = false;
+      delete S.connections[conn.peer];
+      broadcastLobby();
+      render();
+    });
+  });
+  peer.on('error', err=>{
+    if(err.type==='unavailable-id' && attempt<6){ becomeHost(attempt+1); return; }
+    S.joinError = 'Kunde inte skapa rummet (nätverksfel). Testa igen om en stund.';
+    S.screen='start'; render();
+  });
+}
+
+function onHostData(conn, data){
+  if(!data || !data.type) return;
+  if(data.type==='join'){
+    const existing = S.players[conn.peer];
+    S.players[conn.peer] = {
+      id:conn.peer,
+      name: (existing? existing.name : esc(String(data.name||'Gäst').slice(0,20))),
+      avatar: data.avatar || (existing?existing.avatar:AVATARS[0]),
+      score: existing? existing.score : 0,
+      online:true, answeredThisRound:false,
+    };
+    S.players[conn.peer].name = esc(String(data.name||'Gäst').slice(0,20));
+    S.players[conn.peer].avatar = data.avatar || AVATARS[0];
+    conn.send({type:'welcome', ok:true, midGame: S.screen!=='hostLobby' });
+    broadcastLobby();
+    render();
+  } else if(data.type==='spectate'){
+    conn.isSpectator = true;
+    conn.send({type:'welcome', ok:true, spectator:true});
+    conn.send({type:'lobby', players:publicPlayerList(), roomCode:S.roomCode});
+  } else if(data.type==='answer'){
+    if(S.screen==='question' && data.index===S.qIndex && !S.answersThisRound[conn.peer]){
+      S.answersThisRound[conn.peer] = {choice:data.choice, ms:Math.max(0, Math.min(TIME_LIMIT, data.ms||TIME_LIMIT))};
+      if(S.players[conn.peer]) S.players[conn.peer].answeredThisRound = true;
+      broadcastProgress();
+      updateHostProgressNote();
+    }
+  } else if(data.type==='tiebreak_answer'){
+    if(S.screen==='tiebreak'){
+      S.tiebreakAnswers[conn.peer] = {value:Number(data.value)};
+      if(S.players[conn.peer]) S.players[conn.peer].answeredThisRound = true;
+      broadcastProgress();
+      updateHostProgressNote();
+    }
+  }
+}
+function updateHostProgressNote(){
+  // Uppdatera bara texten för att inte nollställa timerns animation mitt i en fråga.
+  const prog = document.getElementById('progress-note');
+  if(!prog) return;
+  const total = Object.values(S.players).filter(p=>p.online!==false).length;
+  const answered = S.screen==='tiebreak' ? Object.keys(S.tiebreakAnswers).length : Object.keys(S.answersThisRound).length;
+  const label = S.screen==='tiebreak' ? 'har gissat' : 'har svarat';
+  prog.textContent = `${answered} av ${total} ${label}`;
+}
+
+function broadcast(msg){
+  Object.values(S.connections).forEach(c=>{ try{ c.send(msg); }catch(e){} });
+}
+function broadcastLobby(){
+  broadcast({type:'lobby', players:publicPlayerList(), roomCode:S.roomCode});
+}
+function broadcastProgress(){
+  const total = Object.values(S.players).filter(p=>p.online!==false).length;
+  const answered = Object.keys(S.answersThisRound).length || Object.keys(S.tiebreakAnswers).length;
+  broadcast({type:'progress', answered, total});
+}
+
+/* ===================== HOST: SPELFLÖDE ===================== */
+function hostStartGame(){
+  if(S.iAmPlaying && S.peer){
+    S.players[S.peer.id] = {
+      id:S.peer.id, name: S.me.name || 'Spelledaren', avatar: S.me.avatar || AVATARS[0],
+      score:0, online:true, answeredThisRound:false, isHost:true,
+    };
+    broadcastLobby();
+  }
+  Object.values(S.players).forEach(p=>{ p.score=0; p.answeredThisRound=false; });
+  S.qIndex = -1;
+  hostNextQuestion();
+}
+function hostNextQuestion(){
+  S.qIndex++;
+  if(S.qIndex >= QUESTIONS.length){ hostGoToTiebreak(); return; }
+  S.currentQ = QUESTIONS[S.qIndex];
+  S.answersThisRound = {};
+  Object.values(S.players).forEach(p=>p.answeredThisRound=false);
+  S.questionStartTime = Date.now();
+  S.reveal = null;
+  S.timeLeftMs = TIME_LIMIT;
+  broadcast({type:'question', index:S.qIndex, total:QUESTIONS.length, topic:S.currentQ.topic,
+    q:S.currentQ.q, options:S.currentQ.options, timeLimit:TIME_LIMIT,
+    scoreboard: publicPlayerList()});
+  S.screen='question';
+  render();
+  startHostCountdown();
+}
+function startHostCountdown(){
+  clearInterval(S.countdownTimer);
+  S.timeLeftMs = TIME_LIMIT;
+  S.countdownTimer = setInterval(()=>{
+    S.timeLeftMs -= 250;
+    if(S.timeLeftMs<=0){ S.timeLeftMs=0; clearInterval(S.countdownTimer); }
+    updateTimerBarOnly();
+  }, 250);
+}
+function updateTimerBarOnly(){
+  const bar = document.getElementById('timerbar');
+  if(bar){
+    const pct = Math.max(0,(S.timeLeftMs/TIME_LIMIT)*100);
+    bar.style.width = pct+'%';
+    bar.classList.toggle('low', S.timeLeftMs < TIME_LIMIT*0.25);
+  }
+  const btn = document.getElementById('btn-reveal');
+  if(btn) btn.disabled = false;
+  const prog = document.getElementById('progress-note');
+  if(prog) prog.textContent = `${Object.keys(S.answersThisRound).length} av ${Object.values(S.players).filter(p=>p.online!==false).length} har svarat`;
+}
+function hostRevealAnswer(){
+  // OBS: Låser bara svaren och räknar poäng - det RÄTTA SVARET visas aldrig
+  // förrän på slutsidans facit. Ingen tally/facit skickas ut här med flit.
+  clearInterval(S.countdownTimer);
+  Object.entries(S.answersThisRound).forEach(([pid, a])=>{
+    const correct = a.choice === S.currentQ.correct;
+    if(correct && S.players[pid]){
+      const bonus = Math.round(50 + 50*Math.max(0,(TIME_LIMIT - a.ms)/TIME_LIMIT));
+      S.players[pid].score += bonus;
+      S.players[pid].lastPoints = bonus;
+    } else if(S.players[pid]){
+      S.players[pid].lastPoints = 0;
+    }
+  });
+  S.reveal = {index:S.qIndex};
+  broadcast({type:'reveal', index:S.qIndex,
+    scoreboard: publicPlayerList(), points: Object.fromEntries(Object.entries(S.answersThisRound).map(([pid,a])=>[pid, S.players[pid]?S.players[pid].lastPoints:0]))});
+  S.screen='reveal';
+  render();
+}
+function hostGoToTiebreak(){
+  S.tiebreakAnswers = {};
+  Object.values(S.players).forEach(p=>p.answeredThisRound=false);
+  broadcast({type:'tiebreak', q:TIEBREAK.q, scoreboard:publicPlayerList()});
+  S.screen='tiebreak';
+  render();
+}
+function computeTiebreakGuesses(){
+  // Bara till internt bruk / facit på slutsidan - visas aldrig som ett eget steg i spelet.
+  return Object.entries(S.tiebreakAnswers).map(([pid,a])=>({
+    id:pid, name:S.players[pid]?S.players[pid].name:'?', avatar:S.players[pid]?S.players[pid].avatar:'❓',
+    value:a.value, diff:Math.abs(a.value - TIEBREAK.correct)
+  })).sort((a,b)=>a.diff-b.diff);
+}
+function computeWinner(){
+  const list = sortedPlayers();
+  if(list.length===0) return {winner:null, list};
+  const topScore = list[0].score;
+  const tied = list.filter(p=>p.score===topScore);
+  let winner = list[0];
+  if(tied.length>1){
+    winner = tied.reduce((best,p)=>{
+      const bd = Math.abs((S.tiebreakAnswers[best.id]?.value ?? Infinity) - TIEBREAK.correct);
+      const pd = Math.abs((S.tiebreakAnswers[p.id]?.value ?? Infinity) - TIEBREAK.correct);
+      return pd<bd ? p : best;
+    }, tied[0]);
+  }
+  return {winner, list};
+}
+function hostShowFinal(){
+  const {winner, list} = computeWinner();
+  const facit = QUESTIONS.map(q=>({q:q.q, a:q.options[q.correct], fact:q.fact}));
+  facit.push({q:TIEBREAK.q, a:String(TIEBREAK.correct), fact:TIEBREAK.fact});
+  const guesses = computeTiebreakGuesses();
+  S.final = {winnerId: winner?winner.id:null, scoreboard:list, facit, guesses};
+  broadcast({type:'final', winnerId: winner?winner.id:null, scoreboard:publicPlayerList(), facit, guesses});
+  S.screen='final';
+  render();
+  launchCelebration();
+}
+function hostRestart(){
+  Object.values(S.players).forEach(p=>{ p.score=0; p.answeredThisRound=false; p.lastPoints=0; });
+  S.qIndex=-1; S.currentQ=null; S.answersThisRound={}; S.tiebreakAnswers={}; S.reveal=null; S.final=null;
+  broadcast({type:'restart', players:publicPlayerList()});
+  S.screen='hostLobby';
+  render();
+}
+
+/* ===================== PEERJS: PLAYER / SPECTATOR ===================== */
+function joinAsPlayer(code, name, avatar){
+  S.me.name = name; S.me.avatar = avatar;
+  const peer = new MiniPeer(undefined, {debug:0});
+  S.peer = peer;
+  peer.on('open', ()=>{
+    const conn = peer.connect('fnq-'+code.toUpperCase(), {reliable:true});
+    S.hostConn = conn;
+    conn.on('open', ()=>{ conn.send({type:'join', name, avatar}); });
+    conn.on('data', data=>onClientData(data));
+    conn.on('close', ()=>{ S.joinError='Tappade kontakten med värden.'; S.screen='start'; render(); });
+    conn.on('error', ()=>{ S.joinError='Kunde inte ansluta. Kolla rumskoden!'; S.screen='join'; render(); });
+  });
+  peer.on('error', ()=>{ S.joinError='Kunde inte ansluta. Kolla rumskoden eller nätverket!'; S.screen='join'; render(); });
+  S.role='player'; S.roomCode=code.toUpperCase();
+}
+function joinAsSpectator(code){
+  const peer = new MiniPeer(undefined, {debug:0});
+  S.peer = peer;
+  peer.on('open', ()=>{
+    const conn = peer.connect('fnq-'+code.toUpperCase(), {reliable:true});
+    S.hostConn = conn;
+    conn.on('open', ()=>{ conn.send({type:'spectate'}); });
+    conn.on('data', data=>onClientData(data));
+    conn.on('error', ()=>{ S.joinError='Kunde inte ansluta till scoreboarden.'; render(); });
+  });
+  S.role='spectator'; S.roomCode=code.toUpperCase(); S.screen='playerLobby'; render();
+}
+function onClientData(data){
+  if(!data || !data.type) return;
+  if(data.type==='welcome'){
+    S.screen='playerLobby'; render();
+  } else if(data.type==='lobby'){
+    S.players = {}; (data.players||[]).forEach(p=>S.players[p.id]=p);
+    if(['playerLobby'].includes(S.screen)) render();
+  } else if(data.type==='progress'){
+    S.answeredCount = data.answered; S.totalCount = data.total;
+    const prog = document.getElementById('progress-note');
+    const label = S.screen==='tiebreak' ? 'har gissat' : 'har svarat';
+    if(prog) prog.textContent = `${data.answered} av ${data.total} ${label}`;
+  } else if(data.type==='question'){
+    S.qIndex = data.index; S.currentQ = data; S.myAnswer=null; S.receivedAt=Date.now();
+    S.myLastPoints = undefined;
+    S.timeLeftMs = data.timeLimit||TIME_LIMIT;
+    (data.scoreboard||[]).forEach(p=>S.players[p.id]=p);
+    S.screen='question'; render();
+    startClientCountdown(data.timeLimit||TIME_LIMIT);
+  } else if(data.type==='reveal'){
+    S.reveal = data;
+    (data.scoreboard||[]).forEach(p=>S.players[p.id]=p);
+    if(S.role==='player' && S.peer && data.points && data.points[S.peer.id]!==undefined){
+      S.myLastPoints = data.points[S.peer.id];
+    }
+    S.screen='reveal'; render();
+  } else if(data.type==='tiebreak'){
+    S.myTiebreakAnswer=null;
+    (data.scoreboard||[]).forEach(p=>S.players[p.id]=p);
+    S.screen='tiebreak'; render();
+  } else if(data.type==='final'){
+    S.final = data;
+    S.players = {}; (data.scoreboard||[]).forEach(p=>S.players[p.id]=p);
+    S.screen='final'; render(); launchCelebration();
+  } else if(data.type==='restart'){
+    S.players = {}; (data.players||[]).forEach(p=>S.players[p.id]=p);
+    S.qIndex=-1; S.myAnswer=null; S.myTiebreakAnswer=null; S.reveal=null; S.final=null;
+    S.screen='playerLobby'; render();
+  }
+}
+function startClientCountdown(limit){
+  clearInterval(S.countdownTimer);
+  S.timeLeftMs = limit;
+  S.countdownTimer = setInterval(()=>{
+    S.timeLeftMs -= 250;
+    if(S.timeLeftMs<=0){ S.timeLeftMs=0; clearInterval(S.countdownTimer); }
+    const bar = document.getElementById('timerbar');
+    if(bar){
+      bar.style.width = Math.max(0,(S.timeLeftMs/limit)*100)+'%';
+      bar.classList.toggle('low', S.timeLeftMs < limit*0.25);
+    }
+  }, 250);
+}
+function sendAnswer(choice){
+  if(S.myAnswer!==null) return;
+  S.myAnswer = choice;
+  const ms = Date.now() - S.receivedAt;
+  if(S.hostConn) S.hostConn.send({type:'answer', index:S.qIndex, choice, ms});
+  render();
+}
+function sendTiebreakAnswer(value){
+  if(S.myTiebreakAnswer!==null) return;
+  S.myTiebreakAnswer = value;
+  if(S.hostConn) S.hostConn.send({type:'tiebreak_answer', value});
+  render();
+}
+// Spelledaren spelar med: samma effekt som sendAnswer/sendTiebreakAnswer,
+// men skrivs direkt in i värdens egna data-strukturer (inget nätverk behövs).
+function sendHostAnswer(choice){
+  if(!S.peer || S.answersThisRound[S.peer.id]) return;
+  const ms = Date.now() - S.questionStartTime;
+  S.answersThisRound[S.peer.id] = {choice, ms:Math.max(0, Math.min(TIME_LIMIT, ms))};
+  if(S.players[S.peer.id]) S.players[S.peer.id].answeredThisRound = true;
+  render();
+}
+function sendHostTiebreakAnswer(value){
+  if(!S.peer || S.tiebreakAnswers[S.peer.id]) return;
+  S.tiebreakAnswers[S.peer.id] = {value};
+  if(S.players[S.peer.id]) S.players[S.peer.id].answeredThisRound = true;
+  render();
+}
+
+/* ===================== FIREWORKS / KONFETTI ===================== */
+// Egen konfetti + fyrverkerier på canvas (inga externa bibliotek).
+const FX = { parts:[], running:false };
+const FX_COLORS = ['#ff5d9e','#00c896','#ffcc00','#3d7dff','#ff9f43','#a349ff','#ffffff'];
+function fxCanvas(){
+  const c = document.getElementById('confetti-canvas');
+  if(!c || !c.getContext) return null;
+  const dpr = window.devicePixelRatio||1;
+  if(c.width !== window.innerWidth*dpr){ c.width = window.innerWidth*dpr; c.height = window.innerHeight*dpr; }
+  return c;
+}
+function fxConfetti(x, y, count, angleDeg, spreadDeg, speed){
+  for(let i=0;i<count;i++){
+    const a = (angleDeg + (Math.random()-0.5)*spreadDeg) * Math.PI/180;
+    const v = speed*(0.5+Math.random()*0.7);
+    FX.parts.push({kind:'confetti', x, y, vx:Math.cos(a)*v, vy:-Math.sin(a)*v,
+      w:6+Math.random()*6, h:4+Math.random()*4, rot:Math.random()*6, vr:(Math.random()-0.5)*0.3,
+      color:FX_COLORS[Math.floor(Math.random()*FX_COLORS.length)], life:260+Math.random()*80});
+  }
+}
+function fxFirework(x, y){
+  const color = FX_COLORS[Math.floor(Math.random()*(FX_COLORS.length-1))];
+  const n = 70;
+  for(let i=0;i<n;i++){
+    const a = (i/n)*Math.PI*2, v = 2.5+Math.random()*3.5;
+    FX.parts.push({kind:'spark', x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, color, life:70+Math.random()*30, max:100});
+  }
+}
+function fxLoop(){
+  const c = fxCanvas(); if(!c){ FX.running=false; return; }
+  const ctx = c.getContext('2d'); const dpr = window.devicePixelRatio||1;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,c.width,c.height);
+  FX.parts = FX.parts.filter(p=>p.life>0 && p.y < window.innerHeight+40);
+  for(const p of FX.parts){
+    p.life--;
+    if(p.kind==='confetti'){
+      p.vy += 0.12; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.rot*2)));
+      ctx.restore();
+    } else {
+      p.vy += 0.05; p.vx *= 0.97; p.vy *= 0.97; p.x += p.vx; p.y += p.vy;
+      ctx.globalAlpha = Math.max(0, p.life/p.max);
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x,p.y,2.4,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+  if(FX.parts.length){ requestAnimationFrame(fxLoop); } else { FX.running=false; ctx.clearRect(0,0,c.width,c.height); }
+}
+function fxStart(){ if(!FX.running){ FX.running=true; requestAnimationFrame(fxLoop); } }
+function launchCelebration(){
+  const W = window.innerWidth, H = window.innerHeight;
+  const duration = 6000, end = Date.now()+duration;
+  fxConfetti(W/2, H/2, 160, 90, 140, 13);
+  const side = setInterval(()=>{
+    fxConfetti(0, H*0.65, 6, 60, 50, 15);
+    fxConfetti(W, H*0.65, 6, 120, 50, 15);
+    if(Date.now()>end) clearInterval(side);
+  }, 60);
+  const fw = setInterval(()=>{
+    fxFirework(W*(0.15+Math.random()*0.7), H*(0.1+Math.random()*0.35));
+    if(Date.now()>end) clearInterval(fw);
+  }, 650);
+  fxStart();
+  setTimeout(fxStart, 100);
+  const keep = setInterval(()=>{ fxStart(); if(Date.now()>end+4000) clearInterval(keep); }, 500);
+}
+
+/* ===================== RENDER ===================== */
+function layout(inner, opts){
+  opts = opts||{};
+  const brand = `<div class="brand"><div><h1>🎉 Fredagsquiz 🎉</h1><span class="sub">${opts.subtitle||'Dolly, valet &amp; vargar'}</span></div></div>`;
+  return `<div class="wrap ${opts.wide?'spectator-shell':''}">${brand}${inner}</div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  let html = '';
+  switch(S.screen){
+    case 'start': html = screenStart(); break;
+    case 'hostLobby': html = screenHostLobby(); break;
+    case 'join': html = screenJoin(); break;
+    case 'playerLobby': html = screenPlayerLobby(); break;
+    case 'question': html = screenQuestion(); break;
+    case 'reveal': html = screenReveal(); break;
+    case 'tiebreak': html = screenTiebreak(); break;
+    case 'final': html = screenFinal(); break;
+    default: html = screenStart();
+  }
+  app.innerHTML = html;
+  attachHandlers();
+}
+
+function screenStart(){
+  return layout(`
+    <div class="card">
+      <p class="muted center">Ett lekfullt fredagsquiz om Dolly Parton, riksdagsvalet 2026 och vargar 🐺</p>
+      ${S.joinError?`<p class="center" style="color:#c0392b;font-weight:800;">${esc(S.joinError)}</p>`:''}
+      <button class="btn" id="btn-host">👑 Skapa quiz (jag är värd)</button>
+      <div class="btn-row">
+        <button class="btn secondary" id="btn-join">🙋 Gå med i quiz</button>
+        <button class="btn secondary" id="btn-spectate">📺 Öppna delad scoreboard</button>
+      </div>
+      <div class="helpbox">
+        <b>Så funkar det:</b> Värden klickar "Skapa quiz" och delar rumskoden. Alla andra öppnar samma fil, klickar "Gå med" och matar in koden. Ingen server behövs – allt går direkt mellan er webbläsare (peer-to-peer). Funkar bäst på samma nätverk/dator som har filen öppen, men fungerar även över internet.
+      </div>
+    </div>`);
+}
+
+function screenJoin(){
+  const avatarGrid = AVATARS.map((a,i)=>`<div class="avatar-opt ${S.me.avatar===a?'sel':''}" data-av="${a}">${a}</div>`).join('');
+  return layout(`
+    <div class="card">
+      <h2 class="center">Gå med i quizet 🙌</h2>
+      ${S.joinError?`<p class="center" style="color:#c0392b;font-weight:800;">${esc(S.joinError)}</p>`:''}
+      <label class="field-label">Rumskod</label>
+      <input type="text" id="in-code" maxlength="4" placeholder="T.ex. AB12" style="text-transform:uppercase;letter-spacing:.15em;text-align:center;font-size:1.4rem;" value="${esc(S.draftCode||S.roomCode||'')}">
+      <label class="field-label">Ditt namn</label>
+      <input type="text" id="in-name" maxlength="20" placeholder="Kalle Anka" value="${esc(S.draftName||'')}">
+      <label class="field-label">Välj din avatar</label>
+      <div class="avatar-grid" id="avatar-grid">${avatarGrid}</div>
+      <button class="btn" id="btn-do-join">Gå med! 🚀</button>
+      <button class="btn ghost" style="margin-top:10px;color:var(--muted);border-color:#ddd;" id="btn-back">← Tillbaka</button>
+    </div>`);
+}
+
+function screenHostLobby(){
+  const list = publicPlayerList();
+  return layout(`
+    <div class="card">
+      <p class="center muted" style="margin-bottom:0;">Din rumskod – dela med kollegorna:</p>
+      <div class="roomcode">${S.roomCode}</div>
+      <div class="btn-row">
+        <button class="btn secondary" id="btn-copycode">📋 Kopiera kod</button>
+        <button class="btn secondary" id="btn-openscoreboard">📺 Öppna delad scoreboard</button>
+      </div>
+      <h3 style="margin-top:22px;">Spelare i lobbyn (${list.length})</h3>
+      <div class="player-list">${list.length? list.map(p=>`<div class="player-chip ${p.online===false?'offline':''}"><span class="av">${p.avatar}</span><span class="nm">${esc(p.name)}</span></div>`).join('') : '<p class="muted">Väntar på spelare...</p>'}</div>
+      <div class="helpbox" style="margin-top:16px;">
+        <label style="display:flex;align-items:center;gap:10px;font-weight:800;cursor:pointer;">
+          <input type="checkbox" id="chk-iamplaying" ${S.iAmPlaying?'checked':''} style="width:20px;height:20px;">
+          🎮 Jag (spelledaren) vill också vara med och tävla
+        </label>
+        ${S.iAmPlaying? `
+          <div style="margin-top:12px;">
+            <label class="field-label">Ditt namn</label>
+            <input type="text" id="in-host-name" maxlength="20" placeholder="Ditt namn" value="${esc(S.draftName||S.me.name||'')}">
+            <label class="field-label">Välj din avatar</label>
+            <div class="avatar-grid" id="avatar-grid">${AVATARS.map(a=>`<div class="avatar-opt ${S.me.avatar===a?'sel':''}" data-av="${a}">${a}</div>`).join('')}</div>
+          </div>` : ''}
+      </div>
+      <button class="btn" id="btn-startgame" style="margin-top:14px;" ${(list.length===0 && !S.iAmPlaying)?'disabled':''}>▶️ Starta quizet (${QUESTIONS.length} frågor + utslagsfråga)</button>
+      <p class="muted center" style="margin-top:10px;">Sena anmälningar kan hoppa på när som helst under spelets gång.</p>
+    </div>`);
+}
+
+function screenPlayerLobby(){
+  const list = sortedPlayers();
+  const waitingText = S.role==='spectator' ? 'Scoreboard – väntar på att värden startar spelet...' : 'Du är med! Väntar på att värden startar quizet...';
+  return layout(`
+    <div class="card">
+      <div class="big-emoji">⏳</div>
+      <h2 class="center">${waitingText}</h2>
+      <p class="center pill">Rumskod: ${S.roomCode}</p>
+      <h3>Spelare (${list.length})</h3>
+      <div class="player-list">${list.length? list.map(p=>`<div class="player-chip ${p.online===false?'offline':''}"><span class="av">${p.avatar}</span><span class="nm">${esc(p.name)}</span><span>${p.score||0} p</span></div>`).join('') : '<p class="muted">Inga spelare ännu.</p>'}</div>
+    </div>`, {wide:S.role==='spectator'});
+}
+
+function topicPillHtml(topic){
+  const color = TOPIC_COLORS[topic]||'#999';
+  return `<span class="topic-pill" style="background:${color}">${TOPIC_NAMES[topic]||topic}</span>`;
+}
+
+function screenQuestion(){
+  const q = S.currentQ;
+  const isHost = S.role==='host';
+  const hostPlaying = isHost && S.iAmPlaying && S.peer;
+  const hostAnswer = hostPlaying ? S.answersThisRound[S.peer.id] : null;
+  const total = Object.values(S.players).filter(p=>p.online!==false).length;
+  const answered = Object.keys(S.answersThisRound||{}).length;
+  const optHtml = (q.options||[]).map((opt,i)=>{
+    const disabled = (S.role==='player') && (S.myAnswer!==null);
+    const picked = S.role==='player' && S.myAnswer===i;
+    return `<button class="opt-btn o${i} ${picked?'picked':''}" data-i="${i}" ${disabled?'disabled':''}>${String.fromCharCode(65+i)}. ${esc(opt)}${picked?' ✓':''}</button>`;
+  }).join('');
+  const hostOptHtml = (q.options||[]).map((opt,i)=>{
+    const disabled = !!hostAnswer;
+    const picked = hostAnswer && hostAnswer.choice===i;
+    return `<button class="opt-btn o${i} ${picked?'picked':''}" data-i="${i}" ${disabled?'disabled':''}>${String.fromCharCode(65+i)}. ${esc(opt)}${picked?' ✓':''}</button>`;
+  }).join('');
+  return layout(`
+    <div class="card">
+      <div class="row">
+        ${topicPillHtml(q.topic)}
+        <span class="pill">Fråga ${(q.index!==undefined?q.index:S.qIndex)+1} / ${q.total||QUESTIONS.length}</span>
+      </div>
+      <div class="timerbar-outer"><div class="timerbar-inner" id="timerbar" style="width:${Math.max(0,Math.min(100,(S.timeLeftMs/TIME_LIMIT)*100))}%"></div></div>
+      <div class="qtext">${esc(q.q)}</div>
+      ${S.role==='player' ? `<div class="opt-grid">${optHtml}</div>
+        ${S.myAnswer!==null?'<p class="center muted" style="margin-top:14px;">✅ Svar skickat! Väntar på övriga...</p>':''}` : ''}
+      ${isHost ? `
+        <p class="progress-note" id="progress-note">${answered} av ${total} har svarat</p>
+        ${hostPlaying ? `
+          <div class="opt-grid">${hostOptHtml}</div>
+          ${hostAnswer?'<p class="center muted" style="margin-top:10px;">✅ Ditt svar är skickat!</p>':'<p class="center muted" style="margin-top:10px;">Klicka ditt svar ovan 👆</p>'}
+        ` : `
+        <div class="muted" style="background:#f4f2fa;border-radius:14px;padding:12px 16px;margin:10px 0;">
+          ${(q.options||[]).map((o,i)=>`<div style="padding:3px 0;">${String.fromCharCode(65+i)}. ${esc(o)}</div>`).join('')}
+        </div>
+        <p class="muted center" style="margin-top:2px;">Som spelledare svarar du inte själv – vänta in spelarna och klicka sedan nedan.</p>
+        `}
+        <button class="btn" id="btn-reveal" style="margin-top:8px;">🔒 Lås svaren &amp; visa poäng</button>
+      ` : ''}
+      ${S.role==='spectator' ? `<p class="progress-note" id="progress-note">${answered} av ${total} har svarat</p>
+        <h3 style="margin-top:18px;">Ställning just nu</h3>${scoreboardHtml()}` : ''}
+    </div>`, {wide:S.role==='spectator'});
+}
+
+function screenReveal(){
+  // Rätt svar visas ALDRIG här - bara på slutsidans facit. Här ser man bara
+  // att svaren är låsta, sin egen rätt/fel-status och ställningen.
+  const r = S.reveal;
+  let myPointsHtml = '';
+  if(S.role==='player'){
+    if(S.myAnswer===null){
+      myPointsHtml = `<p class="center" style="color:var(--muted);font-weight:800;font-size:1.05rem;">⌛ Du hann inte svara denna gången</p>`;
+    } else if(S.myLastPoints!==undefined){
+      myPointsHtml = S.myLastPoints>0
+        ? `<p class="center" style="color:#1c8a4a;font-weight:800;font-size:1.15rem;">🎉 Rätt svar! +${S.myLastPoints} poäng</p>`
+        : `<p class="center" style="color:#c0392b;font-weight:800;font-size:1.15rem;">❌ Fel svar denna gång</p>`;
+    }
+  } else if(S.role==='host' && S.iAmPlaying && S.peer){
+    const mine = S.players[S.peer.id];
+    const answered = !!S.answersThisRound[S.peer.id];
+    if(!answered){
+      myPointsHtml = `<p class="center" style="color:var(--muted);font-weight:800;font-size:1.05rem;">⌛ Du hann inte svara denna gången</p>`;
+    } else if(mine && mine.lastPoints!==undefined){
+      myPointsHtml = mine.lastPoints>0
+        ? `<p class="center" style="color:#1c8a4a;font-weight:800;font-size:1.15rem;">🎉 Rätt svar! +${mine.lastPoints} poäng</p>`
+        : `<p class="center" style="color:#c0392b;font-weight:800;font-size:1.15rem;">❌ Fel svar denna gång</p>`;
+    }
+  }
+  return layout(`
+    <div class="card">
+      <div class="row">${topicPillHtml(S.currentQ?S.currentQ.topic:'')}<span class="pill">Fråga ${r.index+1} / ${QUESTIONS.length}</span></div>
+      <p class="center" style="font-weight:800;font-size:1.2rem;margin-top:6px;">🔒 Svaren är låsta!</p>
+      <p class="center muted" style="margin-top:-6px;">Rätt svar avslöjas i facit på slutsidan 🤫</p>
+      ${myPointsHtml}
+      <h3 style="margin-top:20px;">Ställning</h3>
+      ${scoreboardHtml()}
+      ${S.role==='host' ? `<button class="btn" id="btn-next" style="margin-top:14px;">${r.index+1>=QUESTIONS.length?'➡️ Till utslagsfrågan':'➡️ Nästa fråga'}</button>` : ''}
+    </div>`, {wide:S.role==='spectator'});
+}
+
+function screenTiebreak(){
+  const hostPlaying = S.role==='host' && S.iAmPlaying && S.peer;
+  const hostGuess = hostPlaying ? S.tiebreakAnswers[S.peer.id] : null;
+  return layout(`
+    <div class="card">
+      <div class="topic-pill" style="background:#a349ff;">🎯 UTSLAGSFRÅGA</div>
+      <div class="qtext">${esc(TIEBREAK.q)}</div>
+      ${S.role==='player' ? `
+        <input type="number" inputmode="numeric" id="in-tiebreak" placeholder="Ditt gissade antal..." ${S.myTiebreakAnswer!==null?'disabled':''} value="${S.myTiebreakAnswer!==null?S.myTiebreakAnswer:''}">
+        <button class="btn" id="btn-send-tiebreak" ${S.myTiebreakAnswer!==null?'disabled':''}>Skicka gissning 🎯</button>
+        ${S.myTiebreakAnswer!==null?'<p class="center muted" style="margin-top:10px;">✅ Gissning skickad! Väntar på övriga...</p>':''}
+      ` : ''}
+      ${S.role==='host' ? `
+        ${hostPlaying ? `
+          <input type="number" inputmode="numeric" id="in-host-tiebreak" placeholder="Din gissning..." ${hostGuess?'disabled':''} value="${hostGuess?hostGuess.value:''}">
+          <button class="btn" id="btn-send-host-tiebreak" ${hostGuess?'disabled':''}>Skicka gissning 🎯</button>
+          ${hostGuess?'<p class="center muted" style="margin:10px 0;">✅ Din gissning är skickad!</p>':''}
+        `:''}
+        <p class="progress-note" id="progress-note">${Object.keys(S.tiebreakAnswers).length} av ${Object.values(S.players).filter(p=>p.online!==false).length} har gissat</p>
+        <p class="muted center" style="margin-top:2px;">Rätt svar avslöjas inte förrän på slutresultatets facit.</p>
+        <button class="btn" id="btn-show-final" style="margin-top:8px;">🏁 Avsluta &amp; visa resultat</button>
+      ` : ''}
+      ${S.role==='spectator' ? `<h3 style="margin-top:18px;">Ställning inför utslagsfrågan</h3>${scoreboardHtml()}` : ''}
+    </div>`, {wide:S.role==='spectator'});
+}
+
+function screenFinal(){
+  const list = S.final?.scoreboard || sortedPlayers();
+  const sorted = [...list].sort((a,b)=>b.score-a.score);
+  const winner = sorted.find(p=>p.id === (S.final?S.final.winnerId:null)) || sorted[0];
+  const facit = S.final?.facit || [];
+  const guesses = S.final?.guesses || [];
+  return layout(`
+    <div class="card">
+      ${winner? `
+      <div class="winner-banner">
+        <div class="av">${winner.avatar}</div>
+        <h2>🏆 ${esc(winner.name)} vinner fredagsquizet!</h2>
+        <p style="font-weight:800;margin:0;">${winner.score} poäng</p>
+      </div>`:''}
+      <h3>Slutställning</h3>
+      ${scoreboardHtml()}
+      <details class="facit" style="margin-top:18px;">
+        <summary>📖 Facit – alla frågor och svar</summary>
+        ${facit.map((f,i)=>`<div class="facit-item">
+          <div class="facit-q">${i+1}. ${esc(f.q)}</div>
+          <div class="facit-a">Rätt svar: ${esc(f.a)}</div>
+          <div class="muted">${esc(f.fact)}</div>
+        </div>`).join('')}
+        ${guesses.length? `<div class="facit-item">
+          <div class="facit-q">🎯 Utslagsfrågans gissningar (närmast överst)</div>
+          ${guesses.map((g,i)=>`<div class="muted">${i+1}. ${g.avatar} ${esc(g.name)} – ${g.value}${i===0?' 🎯 närmast!':''}</div>`).join('')}
+        </div>`:''}
+      </details>
+      ${S.role==='host' ? `<button class="btn" id="btn-restart" style="margin-top:18px;">🔄 Starta om spelet</button>` : ''}
+    </div>`);
+}
+
+/* ===================== EVENT HANDLERS ===================== */
+function attachHandlers(){
+  on('#btn-host', 'click', becomeHost);
+  on('#btn-join', 'click', ()=>{ S.role='player'; S.screen='join'; render(); });
+  on('#btn-spectate', 'click', ()=>{
+    const code = prompt('Ange rumskod för scoreboarden:');
+    if(code) joinAsSpectator(code.trim());
+  });
+  on('#btn-back', 'click', ()=>{ S.screen='start'; S.joinError=''; render(); });
+  on('#in-code', 'input', e=>{ S.draftCode = e.target.value.toUpperCase(); });
+  on('#in-name', 'input', e=>{ S.draftName = e.target.value; });
+  on('#in-host-name', 'input', e=>{ S.draftName = e.target.value; S.me.name = e.target.value; });
+  on('#chk-iamplaying', 'change', e=>{
+    S.iAmPlaying = e.target.checked;
+    if(S.iAmPlaying && !S.me.name) S.me.name = 'Spelledaren';
+    render();
+  });
+  on('#avatar-grid', 'click', e=>{
+    const t = e.target.closest('.avatar-opt'); if(!t) return;
+    const codeEl = document.getElementById('in-code'); const nameEl = document.getElementById('in-name') || document.getElementById('in-host-name');
+    if(codeEl) S.draftCode = codeEl.value.toUpperCase();
+    if(nameEl) S.draftName = nameEl.value;
+    S.me.avatar = t.dataset.av; render();
+    setTimeout(()=>{ const nameInput=document.getElementById('in-name')||document.getElementById('in-host-name'); if(nameInput) nameInput.focus(); },0);
+  });
+  on('#btn-do-join', 'click', ()=>{
+    const code = (document.getElementById('in-code').value||'').trim();
+    const name = (document.getElementById('in-name').value||'').trim();
+    S.draftCode = code.toUpperCase(); S.draftName = name;
+    if(!code || code.length<4){ S.joinError='Ange en giltig 4-teckens rumskod.'; render(); return; }
+    if(!name){ S.joinError='Skriv in ditt namn.'; render(); return; }
+    S.joinError='';
+    joinAsPlayer(code, name, S.me.avatar);
+    S.screen='playerLobby'; render();
+  });
+  on('#btn-copycode', 'click', ()=>{
+    navigator.clipboard?.writeText(S.roomCode).catch(()=>{});
+    const b=document.getElementById('btn-copycode'); if(b){ const old=b.textContent; b.textContent='✅ Kopierad!'; setTimeout(()=>b.textContent=old,1500); }
+  });
+  on('#btn-openscoreboard', 'click', ()=>{
+    const url = location.href.split('?')[0] + '?spectate=' + S.roomCode;
+    window.open(url, '_blank');
+  });
+  on('#btn-startgame', 'click', hostStartGame);
+  on('#btn-reveal', 'click', hostRevealAnswer);
+  on('#btn-next', 'click', hostNextQuestion);
+  on('#btn-show-final', 'click', hostShowFinal);
+  on('#btn-restart', 'click', hostRestart);
+  onAll('.opt-btn', 'click', e=>{
+    if(S.screen!=='question') return;
+    const btn = e.target.closest('.opt-btn'); if(!btn || btn.disabled) return;
+    if(S.role==='player') sendAnswer(Number(btn.dataset.i));
+    else if(S.role==='host' && S.iAmPlaying) sendHostAnswer(Number(btn.dataset.i));
+  });
+  function submitTiebreak(){
+    const input = document.getElementById('in-tiebreak');
+    if(!input || input.disabled) return;
+    const v = input.value;
+    if(v===''||v===null||v===undefined) return;
+    sendTiebreakAnswer(Number(v));
+  }
+  on('#btn-send-tiebreak', 'click', submitTiebreak);
+  on('#in-tiebreak', 'keydown', e=>{ if(e.key==='Enter'){ submitTiebreak(); } });
+  function submitHostTiebreak(){
+    const input = document.getElementById('in-host-tiebreak');
+    if(!input || input.disabled) return;
+    const v = input.value;
+    if(v===''||v===null||v===undefined) return;
+    sendHostTiebreakAnswer(Number(v));
+  }
+  on('#btn-send-host-tiebreak', 'click', submitHostTiebreak);
+  on('#in-host-tiebreak', 'keydown', e=>{ if(e.key==='Enter'){ submitHostTiebreak(); } });
+  const codeInput = document.getElementById('in-code');
+  if(codeInput) codeInput.addEventListener('input', e=>{ e.target.value = e.target.value.toUpperCase(); });
+  on('#in-code', 'keydown', e=>{ if(e.key==='Enter'){ const b=document.getElementById('btn-do-join'); if(b) b.click(); } });
+}
+
+/* ===================== INIT ===================== */
+(function init(){
+  const params = new URLSearchParams(location.search);
+  const join = params.get('join');
+  const spectate = params.get('spectate');
+  if(spectate){ joinAsSpectator(spectate); return; }
+  if(join){ S.roomCode = join.toUpperCase(); S.role='player'; S.screen='join'; }
+  render();
+})();
+</script>
+</body>
+</html>

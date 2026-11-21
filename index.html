@@ -9,10 +9,12 @@
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#EEF3F0;--fg:#16211B;--dot:#FF5A36;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#111613;--fg:#EAF1EC;--dot:#FF7A5C;color-scheme:dark}}
+:root{--bg:#EEF3F0;--fg:#16211B;--muted:#5D6A63;--line:#DCE5DF;--hover:#E3EBE6;--panel:#FFFFFF;--dot:#FF5A36;
+  --shadow:0 1px 2px rgba(22,33,27,.08),0 18px 40px -12px rgba(22,33,27,.28);color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#111613;--fg:#EAF1EC;--muted:#93A199;--line:#29332D;--hover:#222B26;--panel:#1E2622;--dot:#FF7A5C;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 18px 40px -12px rgba(0,0,0,.6);color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -22,10 +24,50 @@ h1{margin:0;font-size:clamp(44px,11vw,128px);font-weight:800;letter-spacing:-.04
 h1 a{color:var(--dot);text-decoration:none;display:inline-block;transition:transform .25s}
 h1 a:hover{transform:translateY(-6px) rotate(-8deg)}
 h1 a:focus-visible{outline:3px solid var(--dot);outline-offset:4px;border-radius:6px}
-@media (prefers-reduced-motion:reduce){h1 a{transition:none}}
+
+/* Appmenyn uppe till höger */
+.apps-btn{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));
+  width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--fg);display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.apps-btn:hover,.apps-btn[aria-expanded="true"]{background:var(--hover)}
+.apps-btn:focus-visible{outline:2px solid var(--dot);outline-offset:2px}
+.apps{position:fixed;top:calc(64px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));
+  width:248px;max-width:calc(100vw - 28px);background:var(--panel);border-radius:22px;box-shadow:var(--shadow);padding:14px;
+  font-family:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;transform-origin:top right;transition:opacity .16s,transform .16s}
+.apps[hidden]{display:block!important;visibility:hidden;opacity:0;transform:scale(.96) translateY(-4px);pointer-events:none}
+.apps ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.apps a{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px 10px;border-radius:14px;
+  color:var(--fg);text-decoration:none;font-size:12.5px;font-weight:600;text-align:center;transition:background .12s}
+.apps a:hover{background:var(--hover)}
+.apps a:focus-visible{outline:2px solid var(--dot);outline-offset:1px}
+.ico{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;color:#fff}
+.more{margin-top:8px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){h1 a,.apps,.apps-btn,.apps a{transition:none}}
 </style>
 </head>
 <body>
 <h1>Henrik Wolfner<a href="/kalender/" aria-label="Kalendern" title="Kalendern">.</a></h1>
+
+<button class="apps-btn" id="appsBtn" aria-label="Appar" aria-expanded="false" aria-controls="apps">
+  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></g></svg>
+</button>
+<nav class="apps" id="apps" aria-label="Appar" hidden>
+  <!-- Nya appar: lägg till en <li> här -->
+  <ul>
+    <li><a href="/quiz/"><span class="ico" style="background:linear-gradient(135deg,#3a1c71,#d76d77 60%,#ffaf7b)">
+      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 8.6a3.5 3.5 0 1 1 5 3.2c-1 .5-1.6 1.2-1.6 2.3v.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="18.6" r="1.45" fill="currentColor"/></svg>
+    </span>Fredagsquiz</a></li>
+  </ul>
+  <div class="more">Fler appar kommer</div>
+</nav>
+
+<script>
+(() => {
+  const btn = document.getElementById('appsBtn'), panel = document.getElementById('apps');
+  const set = open => { btn.setAttribute('aria-expanded', open); panel.hidden = !open; if (open) panel.querySelector('a').focus(); };
+  btn.addEventListener('click', e => { e.stopPropagation(); set(panel.hidden); });
+  document.addEventListener('click', e => { if (!panel.hidden && !panel.contains(e.target)) set(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { set(false); btn.focus(); } });
+})();
+</script>
 </body>
 </html>
