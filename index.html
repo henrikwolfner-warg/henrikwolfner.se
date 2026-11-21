@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Henrik Wolfner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF3F0;--fg:#16211B;--dot:#FF5A36;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#111613;--fg:#EAF1EC;--dot:#FF7A5C;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;
+  display:grid;place-items:center;padding:24px max(24px,env(safe-area-inset-right,0px)) 24px max(24px,env(safe-area-inset-left,0px))}
+h1{margin:0;font-size:clamp(44px,11vw,128px);font-weight:800;letter-spacing:-.045em;line-height:.9;text-wrap:balance}
+/* Den gömda länken: punkten efter namnet */
+h1 a{color:var(--dot);text-decoration:none;display:inline-block;transition:transform .25s}
+h1 a:hover{transform:translateY(-6px) rotate(-8deg)}
+h1 a:focus-visible{outline:3px solid var(--dot);outline-offset:4px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){h1 a{transition:none}}
+</style>
+</head>
+<body>
+<h1>Henrik Wolfner<a href="/kalender/" aria-label="Kalendern" title="Kalendern">.</a></h1>
+</body>
+</html>
