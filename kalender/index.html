@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Familjekalendern</title>
-<meta name="theme-color" content="#1F5F5B">
+<meta name="theme-color" content="#FF5A36">
+<link rel="icon" href="/icons/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -522,7 +526,7 @@ const ls = {
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { mem[k] = v; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) { delete mem[k]; } }
 };
-const APP_VERSION = '2026-11-21';
+const APP_VERSION = '2026-11-21.3';
 const API = String(window.KALENDER_API || '').trim();
 const K = { local: 'fk:data', pin: 'fk:pin', cache: 'fk:cache', mode: 'fk:mode', view: 'fk:view' };
 
@@ -534,7 +538,8 @@ const CATS_DEFAULT = [
   { id: 'skola',    name: 'Skola & förskola',  color: '#3B7DD8' },
   { id: 'socialt',  name: 'Kalas & socialt',   color: '#9B59B6' },
   { id: 'gaster',   name: 'Gäster & besök',    color: '#0891B2' },
-  { id: 'annat',    name: 'Annat',             color: '#6B7280' }
+  { id: 'annat',    name: 'Annat',             color: '#6B7280' },
+  { id: 'fodelsedag', name: 'Födelsedagar',    color: '#E0559B' }
 ];
 const DEFAULT_SETTINGS = {
   people: [
@@ -1006,6 +1011,7 @@ function applyData(d) {
   if (!Array.isArray(state.settings.categories) || !state.settings.categories.length) state.settings.categories = clone(CATS_DEFAULT);
   if (!Array.isArray(state.settings.people) || !state.settings.people.length) state.settings.people = clone(DEFAULT_SETTINGS.people);
   if (!Array.isArray(state.settings.kids)) state.settings.kids = [];
+  if (!state.settings.categories.some(c => c.id === 'fodelsedag')) state.settings.categories.push({ id: 'fodelsedag', name: 'Födelsedagar', color: '#E0559B' });
 }
 
 const Store = {
